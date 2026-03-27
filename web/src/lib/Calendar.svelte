@@ -7,8 +7,8 @@
 	export let onNavigate = null;
 
 	$: weekDays = getWeekDays(weekStart);
-	$: sessionsByDay = groupSessionsByDay(sessions);
 	$: playerColors = getPlayerColors(sessions);
+	$: sessionsByDay = groupSessionsByDay(sessions);
 
 	const hourHeight = 40;
 	const hours = Array.from({ length: 24 }, (_, i) => i);
@@ -30,7 +30,12 @@
 
 	function groupSessionsByDay(sessionsData) {
 		const grouped = {};
+		if (!sessionsData || sessionsData.length === 0) {
+			return grouped;
+		}
+		
 		sessionsData.forEach(session => {
+			if (!session.date) return;
 			if (!grouped[session.date]) {
 				grouped[session.date] = [];
 			}
