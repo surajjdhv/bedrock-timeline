@@ -44,7 +44,6 @@ func main() {
 
 	playerStore := store.NewPlayerStore(db)
 	hub := ws.NewHub()
-	playerTracker := tracker.NewPlayerTracker()
 	go hub.Run()
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
@@ -69,6 +68,10 @@ func main() {
 
 	jr := journal.NewReader(journalUnit)
 
+	// Use a temporary tracker for historical processing to detect glitches
+	// We don't keep this state because we don't know actual current online status
+	historicalTracker := tracker.NewPlayerTracker()
+
 	log.Println("Loading historical journal entries...")
 	historicalLines, err := jr.ReadHistory(30)
 	if err != nil {
@@ -80,8 +83,8 @@ func main() {
 			if !ok {
 				continue
 			}
-			// Process event through tracker to handle glitches
-			shouldSave, _ := playerTracker.ProcessEvent(event)
+			// Process event through tracker to handle glitches in history
+			shouldSave, _ := historicalTracker.ProcessEvent(event)
 			if !shouldSave {
 				continue
 			}
@@ -93,6 +96,10 @@ func main() {
 		}
 		log.Printf("Loaded %d historical events", count)
 	}
+	// Historical tracker is discarded - online status comes from DB queries
+
+	// Real-time tracker for live events (starts fresh)
+	playerTracker := tracker.NewPlayerTracker()
 
 	if err := jr.Start(); err != nil {
 		log.Printf("Warning: Failed to start journal reader: %v", err)
