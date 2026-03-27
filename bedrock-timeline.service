@@ -1,0 +1,22 @@
+[Unit]
+Description=Bedrock Timeline - Minecraft Bedrock Player Activity Monitor
+After=network.target
+
+[Service]
+Type=simple
+User=bedrock
+Group=bedrock
+WorkingDirectory=/opt/bedrock-timeline
+ExecStart=/opt/bedrock-timeline/bedrock-timeline
+Restart=always
+RestartSec=5
+
+Environment=PORT=3000
+Environment=DB_PATH=/opt/bedrock-timeline/data/bedrock.db
+Environment=JOURNAL_UNIT=bedrock
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

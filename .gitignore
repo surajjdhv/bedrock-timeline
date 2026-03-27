@@ -1,0 +1,21 @@
+# Build output
+build/
+cmd/server/static/
+
+# Database
+data/
+*.db
+*.db-shm
+*.db-wal
+
+# Dependencies
+node_modules/
+
+# Svelte build artifacts
+web/.svelte-kit/
+web/static/_app/
+
+# Environment
+.env
+.env.*
+!.env.example
