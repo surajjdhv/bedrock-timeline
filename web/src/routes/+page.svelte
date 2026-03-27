@@ -43,6 +43,7 @@
 			const config = await configRes.json();
 			if (config.title) {
 				title = config.title;
+				document.title = config.title;
 			}
 		} catch (e) {
 			console.error('Failed to load data', e);
@@ -58,10 +59,24 @@
 	}
 </script>
 
+<svelte:head>
+	<title>{title}</title>
+</svelte:head>
+
 <main>
 	<header>
 		<div class="header-left">
-			<h1>{title}</h1>
+			<h1>
+				<svg class="title-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<rect x="2" y="2" width="20" height="20" rx="2" fill="#8B5A2B"/>
+					<rect x="2" y="2" width="20" height="8" rx="2" fill="#228B22"/>
+					<rect x="2" y="8" width="20" height="2" fill="#32CD32"/>
+					<rect x="4" y="4" width="4" height="4" fill="#1D6B1D"/>
+					<rect x="10" y="2" width="4" height="6" fill="#1D6B1D"/>
+					<rect x="16" y="4" width="4" height="4" fill="#1D6B1D"/>
+				</svg>
+				{title}
+			</h1>
 			<div class="connection-status" class:connected>
 				{connected ? '● Connected' : '○ Disconnected'}
 			</div>
@@ -72,12 +87,12 @@
 	<div class="dashboard">
 		<div class="sidebar">
 			<Stats {stats} />
+			<OnlinePlayers players={onlinePlayers} />
 			<Leaderboard {players} />
 			<PlayerList {players} onSelect={selectPlayer} />
 		</div>
 		
 		<div class="content">
-			<OnlinePlayers players={onlinePlayers} />
 			<Timeline {events} />
 		</div>
 	</div>
@@ -120,6 +135,15 @@
 		margin: 0;
 		font-size: 1.5rem;
 		color: #1d9bf0;
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+
+	.title-icon {
+		width: 28px;
+		height: 28px;
+		flex-shrink: 0;
 	}
 
 	.connection-status {
@@ -153,15 +177,21 @@
 		gap: 24px;
 	}
 
+	.sidebar {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+	}
+
+	.content {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+	}
+
 	@media (max-width: 768px) {
 		.dashboard {
 			grid-template-columns: 1fr;
 		}
 	}
-
-	.content {
-			display: flex;
-			flex-direction: column;
-			gap: 16px;
-		}
-	</style>
+</style>
