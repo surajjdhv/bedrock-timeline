@@ -14,6 +14,7 @@ import (
 	"github.com/anomalyco/bedrock-timeline/internal/journal"
 	"github.com/anomalyco/bedrock-timeline/internal/parser"
 	"github.com/anomalyco/bedrock-timeline/internal/store"
+	"github.com/anomalyco/bedrock-timeline/internal/tracker"
 	"github.com/anomalyco/bedrock-timeline/internal/ws"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -43,6 +44,7 @@ func main() {
 
 	playerStore := store.NewPlayerStore(db)
 	hub := ws.NewHub()
+	playerTracker := tracker.NewPlayerTracker()
 	go hub.Run()
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
@@ -78,6 +80,11 @@ func main() {
 			if !ok {
 				continue
 			}
+			// Process event through tracker to handle glitches
+			shouldSave, _ := playerTracker.ProcessEvent(event)
+			if !shouldSave {
+				continue
+			}
 			if err := playerStore.SaveEvent(event); err != nil {
 				log.Printf("Failed to save historical event: %v", err)
 				continue
@@ -95,6 +102,12 @@ func main() {
 		for line := range jr.Lines() {
 			event, ok := parser.ParseLine(line)
 			if !ok {
+				continue
+			}
+			// Process event through tracker to handle glitches
+			shouldSave, _ := playerTracker.ProcessEvent(event)
+			if !shouldSave {
+				log.Printf("Skipping glitch event: %s %s (player state inconsistent)", event.EventType, event.PlayerName)
 				continue
 			}
 			if err := playerStore.SaveEvent(event); err != nil {
