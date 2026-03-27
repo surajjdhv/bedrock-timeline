@@ -11,11 +11,12 @@ cd "$PROJECT_DIR"
 make build
 
 echo "Deploying..."
+sudo systemctl stop "$SERVICE_NAME"
 sudo cp "$PROJECT_DIR/build/bedrock-timeline" "$INSTALL_DIR/"
 sudo chown bedrock:bedrock "$INSTALL_DIR/bedrock-timeline"
 
-echo "Restarting service..."
-sudo systemctl restart "$SERVICE_NAME"
+echo "Starting service..."
+sudo systemctl start "$SERVICE_NAME"
 
 echo "Checking status..."
 sudo systemctl status "$SERVICE_NAME" --no-pager

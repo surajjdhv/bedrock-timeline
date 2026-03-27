@@ -1,4 +1,4 @@
-# Bedrock Timeline
+# Artisan's Timeline
 
 A real-time player activity monitor for Minecraft Bedrock servers. Reads `journalctl` logs and displays a live timeline of player joins/leaves via a web interface.
 
@@ -42,6 +42,7 @@ Environment variables:
 - `PORT` - Server port (default: `8080`)
 - `DB_PATH` - SQLite database path (default: `data/bedrock.db`)
 - `JOURNAL_UNIT` - Systemd unit name for journalctl (default: `bedrock`)
+- `TITLE` - Application title displayed in header (default: `Artisan's Timeline`)
 
 ## Deployment
 

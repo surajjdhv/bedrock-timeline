@@ -12,6 +12,7 @@
 	let players = [];
 	let onlinePlayers = [];
 	let stats = {};
+	let title = "Artisan's Timeline";
 	let connected = false;
 	let wsInstance = null;
 	let selectedPlayer = null;
@@ -28,16 +29,21 @@
 
 	async function loadData() {
 		try {
-			const [eventsRes, playersRes, statsRes, onlineRes] = await Promise.all([
+			const [eventsRes, playersRes, statsRes, onlineRes, configRes] = await Promise.all([
 				fetch('/api/events?limit=50'),
 				fetch('/api/players'),
 				fetch('/api/stats'),
-				fetch('/api/online')
+				fetch('/api/online'),
+				fetch('/api/config')
 			]);
 			events = await eventsRes.json();
 			players = await playersRes.json();
 			stats = await statsRes.json();
 			onlinePlayers = await onlineRes.json();
+			const config = await configRes.json();
+			if (config.title) {
+				title = config.title;
+			}
 		} catch (e) {
 			console.error('Failed to load data', e);
 		}
@@ -55,7 +61,7 @@
 <main>
 	<header>
 		<div class="header-left">
-			<h1>Bedrock Timeline</h1>
+			<h1>{title}</h1>
 			<div class="connection-status" class:connected>
 				{connected ? '● Connected' : '○ Disconnected'}
 			</div>
@@ -65,13 +71,13 @@
 	
 	<div class="dashboard">
 		<div class="sidebar">
-			<OnlinePlayers players={onlinePlayers} />
 			<Stats {stats} />
 			<Leaderboard {players} />
 			<PlayerList {players} onSelect={selectPlayer} />
 		</div>
 		
 		<div class="content">
+			<OnlinePlayers players={onlinePlayers} />
 			<Timeline {events} />
 		</div>
 	</div>
@@ -153,9 +159,9 @@
 		}
 	}
 
-	.sidebar {
-		display: flex;
-		flex-direction: column;
-		gap: 16px;
-	}
-</style>
+	.content {
+			display: flex;
+			flex-direction: column;
+			gap: 16px;
+		}
+	</style>

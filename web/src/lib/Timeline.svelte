@@ -1,6 +1,12 @@
 <script>
 	export let events;
 
+	let page = 0;
+	const pageSize = 12;
+
+	$: totalPages = Math.ceil(events.length / pageSize);
+	$: paginatedEvents = events.slice(page * pageSize, (page + 1) * pageSize);
+
 	function formatTime(timestamp) {
 		const date = new Date(timestamp);
 		return date.toLocaleTimeString('en-US', { 
@@ -25,6 +31,14 @@
 	function getEventColor(eventType) {
 		return eventType === 'join' ? '#00ba7c' : '#f4212b';
 	}
+
+	function prevPage() {
+		if (page > 0) page--;
+	}
+
+	function nextPage() {
+		if (page < totalPages - 1) page++;
+	}
 </script>
 
 <div class="timeline">
@@ -34,7 +48,7 @@
 		<p class="empty">No events yet. Waiting for player activity...</p>
 	{:else}
 		<ul class="event-list">
-			{#each events as event (event.timestamp + event.player_name + event.event_type)}
+			{#each paginatedEvents as event (event.timestamp + event.player_name + event.event_type)}
 				<li class="event" style="--event-color: {getEventColor(event.event_type)}">
 					<div class="event-icon">
 						{getEventIcon(event.event_type)}
@@ -50,6 +64,20 @@
 				</li>
 			{/each}
 		</ul>
+
+		{#if totalPages > 1}
+			<div class="pagination">
+				<button class="page-btn" on:click={prevPage} disabled={page === 0}>
+					← Prev
+				</button>
+				<span class="page-info">
+					Page {page + 1} of {totalPages}
+				</span>
+				<button class="page-btn" on:click={nextPage} disabled={page >= totalPages - 1}>
+					Next →
+				</button>
+			</div>
+		{/if}
 	{/if}
 </div>
 
@@ -135,5 +163,40 @@
 	.time {
 		display: block;
 		opacity: 0.7;
+	}
+
+	.pagination {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: 12px;
+		margin-top: 16px;
+		padding-top: 16px;
+		border-top: 1px solid #2f3336;
+	}
+
+	.page-btn {
+		background: transparent;
+		border: 1px solid #2f3336;
+		color: #e7e9ea;
+		padding: 6px 12px;
+		border-radius: 6px;
+		font-size: 0.875rem;
+		cursor: pointer;
+		transition: background-color 0.2s;
+	}
+
+	.page-btn:hover:not(:disabled) {
+		background: #2f3336;
+	}
+
+	.page-btn:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+
+	.page-info {
+		font-size: 0.875rem;
+		color: #71767b;
 	}
 </style>

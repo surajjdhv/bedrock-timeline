@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"embed"
+	"encoding/json"
 	"io/fs"
 	"log"
 	"net/http"
@@ -24,6 +25,7 @@ func main() {
 	dbPath := getEnv("DB_PATH", "data/bedrock.db")
 	port := getEnv("PORT", "3000")
 	journalUnit := getEnv("JOURNAL_UNIT", "bedrock")
+	title := getEnv("TITLE", "Artisan's Timeline")
 
 	if err := os.MkdirAll(filepath.Dir(dbPath), 0755); err != nil {
 		log.Fatalf("Failed to create data directory: %v", err)
@@ -53,6 +55,7 @@ func main() {
 	http.HandleFunc("/api/stats", makeStatsHandler(playerStore))
 	http.HandleFunc("/api/playtime", makePlaytimeHandler(playerStore))
 	http.HandleFunc("/api/sessions", makeSessionsHandler(playerStore))
+	http.HandleFunc("/api/config", makeConfigHandler(title))
 
 	staticFS, err := fs.Sub(static, "static")
 	if err != nil {
@@ -163,6 +166,18 @@ func makeOnlineHandler(playerStore *store.PlayerStore) http.HandlerFunc {
 			return
 		}
 		w.Write(online)
+	}
+}
+
+func makeConfigHandler(title string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+
+		config := map[string]string{
+			"title": title,
+		}
+		json.NewEncoder(w).Encode(config)
 	}
 }
 
