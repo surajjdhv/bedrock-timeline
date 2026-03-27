@@ -8,22 +8,31 @@
 	let sessions = [];
 	let totalPlaytime = 0;
 	let recentEvents = [];
-	let currentWeekStart = null;
+	let currentWeekStart = getSundayOfCurrentWeek();
 
-	onMount(async () => {
+	function getSundayOfCurrentWeek() {
 		const today = new Date();
 		const dayOfWeek = today.getDay();
 		const sunday = new Date(today);
 		sunday.setDate(today.getDate() - dayOfWeek);
-		currentWeekStart = sunday.toISOString().split('T')[0];
+		return formatDateLocal(sunday);
+	}
+
+	function formatDateLocal(date) {
+		const year = date.getFullYear();
+		const month = String(date.getMonth() + 1).padStart(2, '0');
+		const day = String(date.getDate()).padStart(2, '0');
+		return `${year}-${month}-${day}`;
+	}
+
+	onMount(async () => {
 		await loadData();
 	});
 
 	async function loadData() {
 		try {
-			const weekStart = currentWeekStart || getSundayOfCurrentWeek();
 			const [sessionsRes, eventsRes] = await Promise.all([
-				fetch(`/api/sessions?player=${encodeURIComponent(playerName)}&start=${weekStart}`),
+				fetch(`/api/sessions?player=${encodeURIComponent(playerName)}&start=${currentWeekStart}`),
 				fetch(`/api/events?player=${encodeURIComponent(playerName)}&limit=50`)
 			]);
 			sessions = await sessionsRes.json();
@@ -32,14 +41,6 @@
 		} catch (e) {
 			console.error('Failed to load player data', e);
 		}
-	}
-
-	function getSundayOfCurrentWeek() {
-		const today = new Date();
-		const dayOfWeek = today.getDay();
-		const sunday = new Date(today);
-		sunday.setDate(today.getDate() - dayOfWeek);
-		return sunday.toISOString().split('T')[0];
 	}
 
 	async function navigateWeek(newWeekStart) {

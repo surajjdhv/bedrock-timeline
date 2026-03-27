@@ -13,9 +13,15 @@
 	const hourHeight = 40;
 	const hours = Array.from({ length: 24 }, (_, i) => i);
 
+	function parseLocalDate(dateStr) {
+		if (!dateStr) return new Date();
+		const [year, month, day] = dateStr.split('-').map(Number);
+		return new Date(year, month - 1, day);
+	}
+
 	function getWeekDays(start) {
 		const days = [];
-		const startDate = start ? new Date(start) : new Date();
+		const startDate = parseLocalDate(start);
 		const dayOfWeek = startDate.getDay();
 		const sunday = new Date(startDate);
 		sunday.setDate(startDate.getDate() - dayOfWeek);
@@ -172,33 +178,43 @@
 
 	function goToPrevWeek() {
 		if (onNavigate) {
-			const currentStart = weekStart ? new Date(weekStart) : new Date();
+			const currentStart = parseLocalDate(weekStart);
 			const dayOfWeek = currentStart.getDay();
 			const sunday = new Date(currentStart);
 			sunday.setDate(currentStart.getDate() - dayOfWeek);
 			const prevSunday = new Date(sunday);
 			prevSunday.setDate(sunday.getDate() - 7);
-			onNavigate(prevSunday.toISOString().split('T')[0]);
+			onNavigate(formatDateLocal(prevSunday));
 		}
 	}
 
 	function goToNextWeek() {
 		if (onNavigate) {
-			const currentStart = weekStart ? new Date(weekStart) : new Date();
+			const currentStart = parseLocalDate(weekStart);
 			const dayOfWeek = currentStart.getDay();
 			const sunday = new Date(currentStart);
 			sunday.setDate(currentStart.getDate() - dayOfWeek);
 			const nextSunday = new Date(sunday);
 			nextSunday.setDate(sunday.getDate() + 7);
-			onNavigate(nextSunday.toISOString().split('T')[0]);
+			onNavigate(formatDateLocal(nextSunday));
 		}
 	}
 
 	function goToToday() {
 		if (onNavigate) {
 			const today = new Date();
-			onNavigate(today.toISOString().split('T')[0]);
+			const dayOfWeek = today.getDay();
+			const sunday = new Date(today);
+			sunday.setDate(today.getDate() - dayOfWeek);
+			onNavigate(formatDateLocal(sunday));
 		}
+	}
+
+	function formatDateLocal(date) {
+		const year = date.getFullYear();
+		const month = String(date.getMonth() + 1).padStart(2, '0');
+		const day = String(date.getDate()).padStart(2, '0');
+		return `${year}-${month}-${day}`;
 	}
 
 	function isToday(date) {
@@ -233,7 +249,7 @@
 
 		<div class="days-container">
 			{#each weekDays as day}
-				{@const dateStr = day.toISOString().split('T')[0]}
+				{@const dateStr = formatDateLocal(day)}
 				{@const daySessions = sessionsByDay[dateStr] || []}
 				<div class="day-column" class:today={isToday(day)}>
 					<div class="day-header">

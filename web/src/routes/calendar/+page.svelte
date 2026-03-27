@@ -3,35 +3,36 @@
 	import Calendar from '$lib/Calendar.svelte';
 
 	let sessions = [];
-	let currentWeekStart = null;
+	let currentWeekStart = getSundayOfCurrentWeek();
 	let isLoading = true;
-
-	onMount(async () => {
-		const today = new Date();
-		const dayOfWeek = today.getDay();
-		const sunday = new Date(today);
-		sunday.setDate(today.getDate() - dayOfWeek);
-		currentWeekStart = sunday.toISOString().split('T')[0];
-		await loadSessions();
-		isLoading = false;
-	});
-
-	async function loadSessions() {
-		try {
-			const weekStart = currentWeekStart || getSundayOfCurrentWeek();
-			const res = await fetch(`/api/sessions?start=${weekStart}`);
-			sessions = await res.json();
-		} catch (e) {
-			console.error('Failed to load sessions', e);
-		}
-	}
 
 	function getSundayOfCurrentWeek() {
 		const today = new Date();
 		const dayOfWeek = today.getDay();
 		const sunday = new Date(today);
 		sunday.setDate(today.getDate() - dayOfWeek);
-		return sunday.toISOString().split('T')[0];
+		return formatDateLocal(sunday);
+	}
+
+	function formatDateLocal(date) {
+		const year = date.getFullYear();
+		const month = String(date.getMonth() + 1).padStart(2, '0');
+		const day = String(date.getDate()).padStart(2, '0');
+		return `${year}-${month}-${day}`;
+	}
+
+	onMount(async () => {
+		await loadSessions();
+		isLoading = false;
+	});
+
+	async function loadSessions() {
+		try {
+			const res = await fetch(`/api/sessions?start=${currentWeekStart}`);
+			sessions = await res.json();
+		} catch (e) {
+			console.error('Failed to load sessions', e);
+		}
 	}
 
 	async function navigateWeek(newWeekStart) {
