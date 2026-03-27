@@ -16,6 +16,5 @@ web/.svelte-kit/
 web/static/_app/
 
 # Environment
-.env
-.env.*
-!.env.example
+.env.local
+.env.*.local

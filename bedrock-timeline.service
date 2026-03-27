@@ -1,5 +1,5 @@
 [Unit]
-Description=Bedrock Timeline - Minecraft Bedrock Player Activity Monitor
+Description=Artisan's Timeline - Minecraft Bedrock Player Activity Monitor
 After=network.target
 
 [Service]
@@ -11,11 +11,7 @@ ExecStart=/opt/bedrock-timeline/bedrock-timeline
 Restart=always
 RestartSec=5
 
-Environment=PORT=3000
-Environment=DB_PATH=/opt/bedrock-timeline/data/bedrock.db
-Environment=JOURNAL_UNIT=bedrock
-# Uncomment and set to customize the title (default: Artisan's Timeline)
-# Environment=TITLE=Artisan's Timeline
+EnvironmentFile=/opt/bedrock-timeline/.env
 
 StandardOutput=journal
 StandardError=journal
