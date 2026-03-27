@@ -101,6 +101,7 @@ func (s *PlayerStore) GetPlayers(ctx context.Context) ([]byte, error) {
 				LEAD(timestamp) OVER (PARTITION BY player_name ORDER BY timestamp) as next_timestamp,
 				LEAD(event_type) OVER (PARTITION BY player_name ORDER BY timestamp) as next_event_type
 			FROM player_events
+			WHERE timestamp >= DATE('now', '-30 days')
 		),
 		playtime AS (
 			SELECT 
@@ -182,6 +183,44 @@ func (s *PlayerStore) GetStats(ctx context.Context) ([]byte, error) {
 	}
 
 	return json.Marshal(stats)
+}
+
+func (s *PlayerStore) GetOnlinePlayers(ctx context.Context) ([]byte, error) {
+	query := `
+		SELECT player_name, MAX(timestamp) as last_event_time
+		FROM player_events
+		GROUP BY player_name
+		HAVING MAX(CASE WHEN event_type = 'join' THEN timestamp END) > 
+			   COALESCE(MAX(CASE WHEN event_type = 'leave' THEN timestamp END), '1970-01-01')
+		ORDER BY last_event_time DESC`
+
+	rows, err := s.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var onlinePlayers []map[string]interface{}
+	for rows.Next() {
+		var playerName string
+		var lastEventTime sql.NullString
+		if err := rows.Scan(&playerName, &lastEventTime); err != nil {
+			return nil, err
+		}
+		player := map[string]interface{}{
+			"name": playerName,
+		}
+		if lastEventTime.Valid {
+			player["last_event"] = lastEventTime.String
+		}
+		onlinePlayers = append(onlinePlayers, player)
+	}
+
+	if onlinePlayers == nil {
+		onlinePlayers = []map[string]interface{}{}
+	}
+
+	return json.Marshal(onlinePlayers)
 }
 
 type DayPlaytime struct {

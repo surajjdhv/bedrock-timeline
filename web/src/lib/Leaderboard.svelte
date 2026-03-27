@@ -5,7 +5,7 @@
 </script>
 
 <div class="leaderboard">
-	<h3>Leaderboard</h3>
+	<h3>Leaderboard <span class="period">(30 Days)</span></h3>
 	{#if players.length === 0}
 		<p class="empty">No players yet</p>
 	{:else}
@@ -61,6 +61,12 @@
 		font-size: 1rem;
 		font-weight: 600;
 		color: #e7e9ea;
+	}
+
+	.period {
+		font-size: 0.75rem;
+		font-weight: 400;
+		color: #71767b;
 	}
 
 	.empty {

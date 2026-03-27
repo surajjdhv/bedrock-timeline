@@ -4,11 +4,13 @@
 	import PlayerList from '$lib/PlayerList.svelte';
 	import Stats from '$lib/Stats.svelte';
 	import Leaderboard from '$lib/Leaderboard.svelte';
+	import OnlinePlayers from '$lib/OnlinePlayers.svelte';
 	import PlayerDetail from '$lib/PlayerDetail.svelte';
 	import { connectWebSocket } from '$lib/websocket';
 
 	let events = [];
 	let players = [];
+	let onlinePlayers = [];
 	let stats = {};
 	let connected = false;
 	let wsInstance = null;
@@ -26,14 +28,16 @@
 
 	async function loadData() {
 		try {
-			const [eventsRes, playersRes, statsRes] = await Promise.all([
+			const [eventsRes, playersRes, statsRes, onlineRes] = await Promise.all([
 				fetch('/api/events?limit=50'),
 				fetch('/api/players'),
-				fetch('/api/stats')
+				fetch('/api/stats'),
+				fetch('/api/online')
 			]);
 			events = await eventsRes.json();
 			players = await playersRes.json();
 			stats = await statsRes.json();
+			onlinePlayers = await onlineRes.json();
 		} catch (e) {
 			console.error('Failed to load data', e);
 		}
@@ -61,6 +65,7 @@
 	
 	<div class="dashboard">
 		<div class="sidebar">
+			<OnlinePlayers players={onlinePlayers} />
 			<Stats {stats} />
 			<Leaderboard {players} />
 			<PlayerList {players} onSelect={selectPlayer} />

@@ -49,6 +49,7 @@ func main() {
 
 	http.HandleFunc("/api/events", makeEventsHandler(playerStore))
 	http.HandleFunc("/api/players", makePlayersHandler(playerStore))
+	http.HandleFunc("/api/online", makeOnlineHandler(playerStore))
 	http.HandleFunc("/api/stats", makeStatsHandler(playerStore))
 	http.HandleFunc("/api/playtime", makePlaytimeHandler(playerStore))
 	http.HandleFunc("/api/sessions", makeSessionsHandler(playerStore))
@@ -148,6 +149,20 @@ func makeStatsHandler(playerStore *store.PlayerStore) http.HandlerFunc {
 			return
 		}
 		w.Write(stats)
+	}
+}
+
+func makeOnlineHandler(playerStore *store.PlayerStore) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+
+		online, err := playerStore.GetOnlinePlayers(r.Context())
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Write(online)
 	}
 }
 
